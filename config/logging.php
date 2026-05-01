@@ -54,10 +54,11 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels'          => ['daily', 'stderr'],
             'ignore_exceptions' => false,
         ],
 
+        // ─── Single file (simple debugging) ──────────────────────────
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
@@ -65,35 +66,54 @@ return [
             'replace_placeholders' => true,
         ],
 
+
+         // ─── Daily rotating log ───────────────────────────────────────
+        // Keeps 30 days of logs, auto-deletes older files
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'days'   => 30,
             'replace_placeholders' => true,
         ],
 
-        'slack' => [
-            'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
-            'username' => env('LOG_SLACK_USERNAME', env('APP_NAME', 'Laravel')),
-            'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
-            'level' => env('LOG_LEVEL', 'critical'),
+
+        // ─── Payment events ───────────────────────────────────────────
+        // Separate file for all payment-related logs
+        // Makes it easy to audit financial events in isolation
+        'payments' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/payments.log'),
+            'level'  => 'debug',
+            'days'   => 90, // keep 90 days for financial records
             'replace_placeholders' => true,
         ],
 
-        'papertrail' => [
-            'driver' => 'monolog',
-            'level' => env('LOG_LEVEL', 'debug'),
-            'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
-            'handler_with' => [
-                'host' => env('PAPERTRAIL_URL'),
-                'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
-            ],
-            'processors' => [PsrLogMessageProcessor::class],
+
+
+        // ─── Tenant activity ──────────────────────────────────────────
+        // Logs significant tenant actions for support and debugging
+        'tenants' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/tenants.log'),
+            'level'  => 'info',
+            'days'   => 60,
+            'replace_placeholders' => true,
         ],
 
+
+        // ─── Queue / jobs ─────────────────────────────────────────────
+        'jobs' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/jobs.log'),
+            'level'  => 'debug',
+            'days'   => 30,
+            'replace_placeholders' => true,
+        ],
+
+
+        // ─── Stderr (production) ──────────────────────────────────────
+        // Writes to stderr so server monitoring tools can capture it
         'stderr' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
