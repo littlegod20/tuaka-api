@@ -6,17 +6,14 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        // Bind current_tenant as null by default.
+        // ResolveTenant middleware will override this
+        // on every HTTP request.
+        $this->app->bind('current_tenant', fn () => null);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //
