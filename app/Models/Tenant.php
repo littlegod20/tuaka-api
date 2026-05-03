@@ -20,6 +20,8 @@ class Tenant extends Model
         'address',
         'phone',
         'website',
+        'timezone',
+        'is_active'
     ];
 
     // ─── Relationships ────────────────────────────────────────────────

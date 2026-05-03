@@ -112,6 +112,16 @@ return [
         ],
 
 
+        // ─── Auth / security audit ────────────────────────────────────
+        'auth' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/auth.log'),
+            'level'  => 'info',
+            'days'   => 90,
+            'replace_placeholders' => true,
+        ],
+
+
         // ─── Stderr (production) ──────────────────────────────────────
         // Writes to stderr so server monitoring tools can capture it
         'stderr' => [

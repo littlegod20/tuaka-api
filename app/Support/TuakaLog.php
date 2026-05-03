@@ -148,4 +148,109 @@ class TuakaLog
             'timestamp' => now()->toIso8601String(),
         ]);
     }
+
+    // ─── Auth / security audit ──────────────────────────────────────
+
+    public static function tenantUserLoginSuccess(
+        string $tenantSlug,
+        string $userId,
+        string $email
+    ): void {
+        Log::channel('auth')->info('Tenant user login succeeded', [
+            'tenant'    => $tenantSlug,
+            'user_id'   => $userId,
+            'email'     => $email,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function tenantUserLoginFailed(
+        string $tenantSlug,
+        string $email
+    ): void {
+        Log::channel('auth')->warning('Tenant user login failed', [
+            'tenant'    => $tenantSlug,
+            'email'     => $email,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function tenantUserLoggedOut(string $tenantSlug, string $userId): void
+    {
+        Log::channel('auth')->info('Tenant user logged out', [
+            'tenant'    => $tenantSlug,
+            'user_id'   => $userId,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function tenantUserTokenRefreshFailed(string $tenantSlug, string $userId): void
+    {
+        Log::channel('auth')->warning('Tenant user token refresh failed', [
+            'tenant'    => $tenantSlug,
+            'user_id'   => $userId,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function workspaceRegistrationFailed(string $message, array $context = []): void
+    {
+        Log::channel('auth')->error('Workspace registration failed', array_merge(
+            ['message' => $message, 'timestamp' => now()->toIso8601String()],
+            $context
+        ));
+    }
+
+    public static function adminLoginSuccess(string $adminId, string $email): void
+    {
+        Log::channel('auth')->info('Admin login succeeded', [
+            'admin_id'  => $adminId,
+            'email'     => $email,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function adminLoginFailed(string $email): void
+    {
+        Log::channel('auth')->warning('Admin login failed', [
+            'email'     => $email,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function adminLoggedOut(string $adminId): void
+    {
+        Log::channel('auth')->info('Admin logged out', [
+            'admin_id'  => $adminId,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    // ─── Tenant resolution (support / debugging) ──────────────────────
+
+    public static function tenantHeaderMissing(): void
+    {
+        Log::channel('tenants')->notice('Tenant could not be identified (no X-Tenant / dev fallback)', [
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    public static function workspaceNotFound(string $slug): void
+    {
+        Log::channel('tenants')->notice('Workspace not found', [
+            'slug'      => $slug,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    // ─── Subscription gate ───────────────────────────────────────────
+
+    public static function subscriptionAccessDenied(string $tenantSlug, string $subscriptionStatus): void
+    {
+        Log::channel('tenants')->warning('API access denied — subscription not active', [
+            'tenant'    => $tenantSlug,
+            'status'    => $subscriptionStatus,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
 }

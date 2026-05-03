@@ -6,23 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        Schema::dropIfExists('users');
+
         Schema::create('users', function (Blueprint $table) {
-            $table->id()->primary();
+            $table->uuid('id')->primary();
+            $table->uuid('tenant_id')->index();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('email');
             $table->string('password');
             $table->string('role')->default('member'); // owner, admin, member
-            $table->string('status')->default('active'); // active, invited, suspended
+            $table->boolean('is_active')->default(true);
             $table->timestamp('invited_at')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+            $table->unique(['tenant_id', 'email']); // email unique per tenant
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
         });
+
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -40,9 +44,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

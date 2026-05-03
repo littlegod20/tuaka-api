@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+
+    'dev_tenant' => env('DEV_TENANT', null),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
