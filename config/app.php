@@ -18,6 +18,8 @@ return [
 
     'dev_tenant' => env('DEV_TENANT', null),
 
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3001'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

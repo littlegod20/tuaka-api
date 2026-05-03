@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\V1\Billing\BillingController;
 use App\Http\Controllers\Api\V1\Tenant\TeamController;
 use App\Http\Controllers\Api\V1\Webhook\WebhookController;
 use App\Http\Controllers\Api\V1\Auth\AdminAuthController;
+use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
+use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Health check ─────────────────────────────────────────────────────────
@@ -24,6 +26,15 @@ Route::prefix('inv')->group(function () {
     Route::get('{token}',      [InvoiceController::class, 'publicView']);
     Route::post('{token}/pay', [InvoiceController::class, 'publicPay']);
 });
+
+// ─── Password reset (public, no tenant needed) ────────────────────────────
+Route::prefix('v1')->group(function () {
+    Route::post('forgot-password', [PasswordResetController::class, 'sendLink']);
+    Route::post('reset-password',  [PasswordResetController::class, 'reset']);
+});
+
+// ─── Email verification (public token endpoint, no auth) ──────────────────
+Route::get('v1/verify-email', [EmailVerificationController::class, 'verify']);
 
 // ─── Admin routes (separate guard, no tenant scope) ───────────────────────
 Route::prefix('v1/admin')->group(function () {
@@ -55,6 +66,8 @@ Route::prefix('v1')
             
                 Route::get('me',       [AuthController::class, 'me']);
                 Route::post('logout',  [AuthController::class, 'logout']);
+
+                Route::post('email/resend', [EmailVerificationController::class, 'resend']);
                 
                 // Invoices and quotes
                 Route::apiResource('invoices', InvoiceController::class);

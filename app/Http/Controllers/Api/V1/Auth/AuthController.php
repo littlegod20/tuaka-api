@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\VerifyEmailMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\TuakaLog;
@@ -74,6 +77,12 @@ class AuthController extends Controller
 
             TuakaLog::tenantRegistered($tenant->slug, 'none');
             $token = JWTAuth::fromUser($user);
+
+            // Send verification email
+            $token = Str::random(64);
+            $user->update(['email_verification_token' => $token]);
+            $url = config('app.frontend_url') . '/verify-email?token=' . $token . '&email=' . urlencode($user->email);
+            Mail::to($user->email)->queue(new VerifyEmailMail($user, $url));
 
             return response()->json([
                 'message' => 'Workspace created successfully.',

@@ -7,6 +7,7 @@ use App\Support\TuakaLog;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class ResolveTenant
 {
@@ -23,6 +24,7 @@ class ResolveTenant
         }
 
         $tenant = Tenant::where('slug', $slug)->first();
+        Log::info('Tenant: ' . $tenant);
 
         if (! $tenant) {
             TuakaLog::workspaceNotFound($slug);
