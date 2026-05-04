@@ -26,10 +26,6 @@ class EmailVerificationController extends Controller
 
         $user->update(['email_verification_token' => $token]);
 
-        Log::info('User: ' . json_encode($user));
-        Log::info('Token: ' . $token);
-        Log::info('Email: ' . $user->email);
-
         $url = config('app.frontend_url') . '/verify-email?token=' . $token . '&email=' . urlencode($user->email);
 
         Mail::to($user->email)->queue(new VerifyEmailMail($user, $url));
@@ -53,10 +49,6 @@ class EmailVerificationController extends Controller
         ->where('email', $email)
         ->where('email_verification_token', $token)
         ->first();
-
-        Log::info('User: ' . json_encode($user));
-        Log::info('Email:' . $email);
-        Log::info('Token:' . $token);
         
         if (! $user) {
             return response()->json(['message' => 'Invalid or expired verification link.'], 422);
