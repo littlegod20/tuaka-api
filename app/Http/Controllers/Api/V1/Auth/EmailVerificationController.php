@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class EmailVerificationController extends Controller
 {
@@ -24,6 +25,10 @@ class EmailVerificationController extends Controller
         $token = Str::random(64);
 
         $user->update(['email_verification_token' => $token]);
+
+        Log::info('User: ' . json_encode($user));
+        Log::info('Token: ' . $token);
+        Log::info('Email: ' . $user->email);
 
         $url = config('app.frontend_url') . '/verify-email?token=' . $token . '&email=' . urlencode($user->email);
 
@@ -42,10 +47,17 @@ class EmailVerificationController extends Controller
             return response()->json(['message' => 'Invalid verification link.'], 422);
         }
 
-        $user = User::where('email', $email)
-            ->where('email_verification_token', $token)
-            ->first();
+        // withoutGlobalScopes() bypasses TenantScope so we can look up
+        // by email + token without needing the tenant in context
+        $user = User::withoutGlobalScopes()
+        ->where('email', $email)
+        ->where('email_verification_token', $token)
+        ->first();
 
+        Log::info('User: ' . json_encode($user));
+        Log::info('Email:' . $email);
+        Log::info('Token:' . $token);
+        
         if (! $user) {
             return response()->json(['message' => 'Invalid or expired verification link.'], 422);
         }

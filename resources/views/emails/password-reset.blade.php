@@ -7,10 +7,10 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; margin: 0; padding: 40px 16px; color: #111827; }
     .card { background: #fff; border-radius: 12px; max-width: 480px; margin: 0 auto; padding: 40px; border: 1px solid #e5e7eb; }
     .logo { font-size: 24px; font-weight: 700; margin-bottom: 32px; }
-    .logo span { color: #f59e0b; }
+    .logo span { color: #25a572; }
     h1 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
     p { color: #6b7280; font-size: 15px; line-height: 1.6; margin: 0 0 24px; }
-    .btn { display: inline-block; background: #f59e0b; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; }
+    .btn { display: inline-block; background: #25a572; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; }
     .footer { text-align: center; margin-top: 32px; font-size: 13px; color: #9ca3af; }
   </style>
 </head>

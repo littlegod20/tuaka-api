@@ -34,7 +34,8 @@ class Tenant extends Model
     public function subscription(): HasOne
     {
         return $this->hasOne(Subscription::class)
-                    ->latestOfMany();
+        ->orderByDesc('created_at')
+        ->limit(1);
     }
 
     public function subscriptions(): HasMany
