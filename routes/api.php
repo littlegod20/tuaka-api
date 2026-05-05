@@ -27,6 +27,7 @@ Route::prefix('webhooks')->group(function () {
 // ─── Public invoice routes (no auth, token-based) ─────────────────────────
 Route::prefix('inv')->group(function () {
     Route::get('{token}',      [InvoiceController::class, 'publicView']);
+    Route::get('{token}/download',  [InvoiceController::class,  'downloadPublic']);
     Route::post('{token}/pay', [PaymentController::class, 'initiate']);
     Route::get('{token}/payment-status/{reference}', [PaymentController::class, 'status']);
 });
@@ -85,7 +86,9 @@ Route::prefix('v1')
                 Route::post('invoices/{invoice}/send',       [InvoiceController::class, 'send']);
                 Route::post('invoices/{invoice}/mark-paid',  [InvoiceController::class, 'markPaid']);
                 Route::post('invoices/{invoice}/convert',    [InvoiceController::class, 'convert']);
-                
+                Route::get('invoices/{invoice}/download', [InvoiceController::class, 'download']);
+
+
                 // Clients (bulk route must be registered before apiResource)
                 Route::post('clients/bulk-destroy', [ClientController::class, 'bulkDestroy']);
                 Route::apiResource('clients', ClientController::class);

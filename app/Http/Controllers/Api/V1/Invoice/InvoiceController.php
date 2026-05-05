@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Throwable;
 
 class InvoiceController extends Controller
@@ -309,5 +310,42 @@ class InvoiceController extends Controller
         $invoice->recordView();
 
         return response()->json($invoice);
+    }
+
+    // ─── Download PDF (authenticated) ────────────────────────────────────
+
+    public function download(Invoice $invoice): \Illuminate\Http\Response
+    {
+        $invoice->load(['client', 'items', 'tenant']);
+
+        $pdf = Pdf::loadView('pdf.invoice', [
+            'invoice' => $invoice,
+            'tenant'  => $invoice->tenant,
+            'client'  => $invoice->client,
+        ]);
+
+        $filename = strtolower($invoice->number) . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    // ─── Download PDF (public token) ─────────────────────────────────────
+
+    public function downloadPublic(string $token): \Illuminate\Http\Response
+    {
+        $invoice = Invoice::withoutGlobalScopes()
+            ->with(['client', 'items', 'tenant'])
+            ->where('view_token', $token)
+            ->firstOrFail();
+
+        $pdf = Pdf::loadView('pdf.invoice', [
+            'invoice' => $invoice,
+            'tenant'  => $invoice->tenant,
+            'client'  => $invoice->client,
+        ]);
+
+        $filename = strtolower($invoice->number) . '.pdf';
+
+        return $pdf->download($filename);
     }
 }
