@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Payment\PaymentController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Dashboard\DashboardController;
 
 // ─── Health check ─────────────────────────────────────────────────────────
 Route::get('/health', fn () => response()->json(['status' => 'ok']));
@@ -71,6 +72,9 @@ Route::prefix('v1')
                 Route::post('logout',  [AuthController::class, 'logout']);
 
                 Route::post('email/resend', [EmailVerificationController::class, 'resend']);
+
+                // Dashboard
+                Route::get('dashboard', DashboardController::class);
                
                 // Tenant
                 Route::get('tenant',       [TenantController::class, 'show']);
