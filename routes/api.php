@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Client\ClientController;
 use App\Http\Controllers\Api\V1\Product\ProductController;
 use App\Http\Controllers\Api\V1\Billing\BillingController;
 use App\Http\Controllers\Api\V1\Tenant\TeamController;
+use App\Http\Controllers\Api\V1\Tenant\TenantController;
 use App\Http\Controllers\Api\V1\Webhook\WebhookController;
 use App\Http\Controllers\Api\V1\Auth\AdminAuthController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
@@ -68,7 +69,11 @@ Route::prefix('v1')
                 Route::post('logout',  [AuthController::class, 'logout']);
 
                 Route::post('email/resend', [EmailVerificationController::class, 'resend']);
-                
+               
+                // Tenant
+                Route::get('tenant',       [TenantController::class, 'show']);
+                Route::put('tenant',       [TenantController::class, 'update']);
+
                 // Invoices and quotes
                 Route::apiResource('invoices', InvoiceController::class);
                 Route::post('invoices/{invoice}/send',       [InvoiceController::class, 'send']);

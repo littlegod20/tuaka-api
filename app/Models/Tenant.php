@@ -77,25 +77,47 @@ class Tenant extends Model
 
     /**
      * Generate the next sequential invoice number for this tenant.
-     * e.g. INV-0001, INV-0002, etc.
+     * Uses a DB-level lock to prevent duplicates under concurrent requests.
+     * e.g. INV-0001, INV-0002, ...
      */
     public function nextInvoiceNumber(): string
     {
-        $latest = $this->invoices()
-                       ->withoutGlobalScope(\App\Scopes\TenantScope::class)
-                       ->where('tenant_id', $this->id)
-                       ->latest()
-                       ->value('number');
+        $prefix = $this->invoice_prefix ?? 'INV';
 
-        if (! $latest) {
-            return $this->invoice_prefix . '-0001';
+        $latest = \App\Models\Invoice::withoutGlobalScopes()
+            ->where('tenant_id', $this->id)
+            ->where('type', 'invoice')
+            ->lockForUpdate()
+            ->orderByRaw("CAST(SUBSTRING(number FROM '[0-9]+$') AS INTEGER) DESC")
+            ->value('number');
+
+        $next = 1;
+
+        if ($latest) {
+            preg_match('/(\d+)$/', $latest, $matches);
+            $next = isset($matches[1]) ? ((int) $matches[1]) + 1 : 1;
         }
 
-        // extract the numeric part and increment
-        $parts  = explode('-', $latest);
-        $number = (int) end($parts) + 1;
+        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+    }
 
-        return $this->invoice_prefix . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+    public function nextQuoteNumber(): string
+    {
+        $latest = \App\Models\Invoice::withoutGlobalScopes()
+            ->where('tenant_id', $this->id)
+            ->where('type', 'quote')
+            ->lockForUpdate()
+            ->orderByRaw("CAST(SUBSTRING(number FROM '[0-9]+$') AS INTEGER) DESC")
+            ->value('number');
+
+        $next = 1;
+
+        if ($latest) {
+            preg_match('/(\d+)$/', $latest, $matches);
+            $next = isset($matches[1]) ? ((int) $matches[1]) + 1 : 1;
+        }
+
+        return 'QUO-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     /**

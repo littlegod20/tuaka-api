@@ -222,11 +222,15 @@ class AuthController extends Controller
     private function tenantData(Tenant $tenant): array
     {
         return [
-            'id'       => $tenant->id,
-            'name'     => $tenant->name,
-            'slug'     => $tenant->slug,
-            'currency' => $tenant->currency,
-            'timezone' => $tenant->timezone,
+            'id'             => $tenant->id,
+            'name'           => $tenant->name,
+            'slug'           => $tenant->slug,
+            'currency'       => $tenant->currency,
+            'timezone'       => $tenant->timezone,
+            'invoice_prefix' => $tenant->invoice_prefix,
+            'address'        => $tenant->address,
+            'phone'          => $tenant->phone,
+            'website'        => $tenant->website,
         ];
     }
 }
