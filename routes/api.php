@@ -75,7 +75,8 @@ Route::prefix('v1')
                 Route::post('invoices/{invoice}/mark-paid',  [InvoiceController::class, 'markPaid']);
                 Route::post('invoices/{invoice}/convert',    [InvoiceController::class, 'convert']);
                 
-                // Clients
+                // Clients (bulk route must be registered before apiResource)
+                Route::post('clients/bulk-destroy', [ClientController::class, 'bulkDestroy']);
                 Route::apiResource('clients', ClientController::class);
                 
                 // Products
