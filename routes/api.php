@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Webhook\WebhookController;
 use App\Http\Controllers\Api\V1\Auth\AdminAuthController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
+use App\Http\Controllers\Api\V1\Payment\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Health check ─────────────────────────────────────────────────────────
@@ -25,7 +26,8 @@ Route::prefix('webhooks')->group(function () {
 // ─── Public invoice routes (no auth, token-based) ─────────────────────────
 Route::prefix('inv')->group(function () {
     Route::get('{token}',      [InvoiceController::class, 'publicView']);
-    Route::post('{token}/pay', [InvoiceController::class, 'publicPay']);
+    Route::post('{token}/pay', [PaymentController::class, 'initiate']);
+    Route::get('{token}/payment-status/{reference}', [PaymentController::class, 'status']);
 });
 
 // ─── Password reset (public, no tenant needed) ────────────────────────────
@@ -64,7 +66,7 @@ Route::prefix('v1')
         // Protected — JWT required from here on
         Route::middleware(['auth:api', 'subscription'])
         ->group(function () {
-            
+
                 Route::get('me',       [AuthController::class, 'me']);
                 Route::post('logout',  [AuthController::class, 'logout']);
 

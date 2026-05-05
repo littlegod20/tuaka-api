@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'paths' => ['api/*', 'webhooks/*'],
+    'paths' => ['api/*', 'webhooks/*', 'inv/*'],
 
     'allowed_methods' => ['*'],
 
