@@ -79,7 +79,8 @@ Route::prefix('v1')
                 Route::post('clients/bulk-destroy', [ClientController::class, 'bulkDestroy']);
                 Route::apiResource('clients', ClientController::class);
                 
-                // Products
+                // Products (bulk route must be registered before apiResource)
+                Route::post('products/bulk-destroy', [ProductController::class, 'bulkDestroy']);
                 Route::apiResource('products', ProductController::class);
                 
                 // Team
