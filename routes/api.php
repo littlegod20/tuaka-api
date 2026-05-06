@@ -51,12 +51,24 @@ Route::prefix('v1/invite')->group(function () {
 
 // ─── Admin routes (separate guard, no tenant scope) ───────────────────────
 Route::prefix('v1/admin')->group(function () {
-    Route::post('login', [AdminAuthController::class, 'login']);
+    Route::post('login',  [AdminAuthController::class, 'login']);
 
     Route::middleware('auth:admin')->group(function () {
-        Route::post('logout', [AdminAuthController::class, 'logout']);
-        Route::get('dashboard', fn () => response()->json(['message' => 'admin ok']));
-        // Admin tenant + plan routes added later
+        Route::post('logout',   [AdminAuthController::class, 'logout']);
+
+        // Dashboard
+        Route::get('dashboard', \App\Http\Controllers\Api\V1\Admin\AdminDashboardController::class);
+
+        // Tenants
+        Route::get('tenants',                    [\App\Http\Controllers\Api\V1\Admin\AdminTenantController::class, 'index']);
+        Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\Admin\AdminTenantController::class, 'show']);
+        Route::post('tenants/{id}/activate',     [\App\Http\Controllers\Api\V1\Admin\AdminTenantController::class, 'activate']);
+        Route::post('tenants/{id}/deactivate',   [\App\Http\Controllers\Api\V1\Admin\AdminTenantController::class, 'deactivate']);
+
+        // Plans
+        Route::get('plans', fn() => response()->json(
+            \App\Models\Plan::orderBy('price_monthly')->get()
+        ));
     });
 });
 
@@ -70,7 +82,7 @@ Route::post('v1/register', [AuthController::class, 'register'])->middleware('thr
 Route::prefix('v1')
     ->middleware(['tenant'])
     ->group(function () {
-        
+
         // Auth — no JWT needed yet (this is how you get the token)
         Route::post('login',    [AuthController::class, 'login'])->middleware('throttle:auth');
 
