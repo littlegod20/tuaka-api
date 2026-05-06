@@ -84,4 +84,34 @@ class PaystackService
     {
         return 'TK-' . strtoupper(substr($invoiceId, 0, 8)) . '-' . strtoupper(Str::random(8));
     }
+
+    public function initializeTransaction(
+        string $email,
+        int    $amount,
+        string $reference,
+        array  $metadata = [],
+        string $callbackUrl = '',
+    ): array {
+        $response = Http::withToken($this->secretKey)
+            ->withoutVerifying()
+            ->post("{$this->baseUrl}/transaction/initialize", [
+                'email'        => $email,
+                'amount'       => $amount,
+                'reference'    => $reference,
+                'metadata'     => $metadata,
+                'callback_url' => $callbackUrl,
+                'currency'     => 'GHS',
+            ]);
+    
+        return $response->json();
+    }
+    
+    public function verifyTransaction(string $reference): array
+    {
+        $response = Http::withToken($this->secretKey)
+            ->withoutVerifying()
+            ->get("{$this->baseUrl}/transaction/verify/{$reference}");
+    
+        return $response->json();
+    }
 }

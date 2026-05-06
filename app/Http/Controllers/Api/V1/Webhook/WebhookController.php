@@ -36,24 +36,62 @@ class WebhookController extends Controller
     private function handleChargeSuccess(array $data): void
     {
         $reference = $data['reference'] ?? null;
+        $meta      = $data['metadata'] ?? [];
+    
         if (! $reference) return;
-
+    
+        // ── Invoice payment ──
         $payment = Payment::withoutGlobalScopes()
             ->where('provider_ref', $reference)
             ->where('provider', 'paystack')
             ->first();
-
-        if (! $payment || $payment->isCompleted()) return;
-
-        $payment->update([
-            'status'  => 'completed',
-            'paid_at' => now(),
-            'meta'    => array_merge($payment->meta ?? [], ['webhook_data' => $data]),
-        ]);
-
-        $invoice = Invoice::withoutGlobalScopes()->find($payment->invoice_id);
-        if ($invoice && ! $invoice->isPaid()) {
-            $invoice->markAsPaid();
+    
+        if ($payment && ! $payment->isCompleted()) {
+            $payment->update([
+                'status'  => 'completed',
+                'paid_at' => now(),
+                'meta'    => array_merge($payment->meta ?? [], ['webhook_data' => $data]),
+            ]);
+    
+            $invoice = Invoice::withoutGlobalScopes()->find($payment->invoice_id);
+            if ($invoice && ! $invoice->isPaid()) {
+                $invoice->markAsPaid();
+            }
+            return;
+        }
+    
+        // ── Subscription payment ──
+        if (isset($meta['plan_id']) && isset($meta['tenant_id'])) {
+            $plan = \App\Models\Plan::find($meta['plan_id']);
+            if (! $plan) return;
+    
+            $subscription = \App\Models\Subscription::withoutGlobalScopes()
+                ->where('tenant_id', $meta['tenant_id'])
+                ->latest()
+                ->first();
+    
+            $periodStart = now();
+            $periodEnd   = now()->addMonth();
+    
+            if ($subscription) {
+                $subscription->update([
+                    'plan_id'              => $plan->id,
+                    'status'               => 'active',
+                    'paystack_ref'         => $reference,
+                    'current_period_start' => $periodStart,
+                    'current_period_end'   => $periodEnd,
+                    'cancelled_at'         => null,
+                ]);
+            } else {
+                \App\Models\Subscription::create([
+                    'tenant_id'            => $meta['tenant_id'],
+                    'plan_id'              => $plan->id,
+                    'status'               => 'active',
+                    'paystack_ref'         => $reference,
+                    'current_period_start' => $periodStart,
+                    'current_period_end'   => $periodEnd,
+                ]);
+            }
         }
     }
 }

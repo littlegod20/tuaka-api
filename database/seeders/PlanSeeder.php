@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class PlanSeeder extends Seeder
 {
@@ -12,58 +11,51 @@ class PlanSeeder extends Seeder
     {
         $plans = [
             [
-                'id'            => Str::uuid(),
                 'name'          => 'Free',
                 'slug'          => 'free',
                 'price_monthly' => 0,
                 'invoice_limit' => 5,
-                'features'      => json_encode([
-                    'invoices_per_month' => 5,
-                    'clients'            => 10,
-                    'pdf_export'         => true,
-                    'reminders'          => false,
-                    'custom_branding'    => false,
-                ]),
-                'is_active'     => true,
-                'created_at'    => now(),
-                'updated_at'    => now(),
+                'features'      => [
+                    '5 invoices per month',
+                    'PDF downloads',
+                    'MoMo payments',
+                    '1 user',
+                ],
+                'is_active' => true,
             ],
             [
-                'id'            => Str::uuid(),
-                'name'          => 'Basic',
-                'slug'          => 'basic',
-                'price_monthly' => 9000,   // GHS 90.00 in pesewas
-                'invoice_limit' => 50,
-                'features'      => json_encode([
-                    'invoices_per_month' => 50,
-                    'clients'            => 100,
-                    'pdf_export'         => true,
-                    'reminders'          => true,
-                    'custom_branding'    => false,
-                ]),
-                'is_active'     => true,
-                'created_at'    => now(),
-                'updated_at'    => now(),
+                'name'          => 'Starter',
+                'slug'          => 'starter',
+                'price_monthly' => 9900, // GHS 99.00
+                'invoice_limit' => -1,
+                'features'      => [
+                    'Unlimited invoices',
+                    'PDF downloads',
+                    'MoMo payments',
+                    'Up to 3 team members',
+                    'Email support',
+                ],
+                'is_active' => true,
             ],
             [
-                'id'            => Str::uuid(),
-                'name'          => 'Pro',
-                'slug'          => 'pro',
-                'price_monthly' => 25000,  // GHS 250.00 in pesewas
-                'invoice_limit' => -1,     // unlimited
-                'features'      => json_encode([
-                    'invoices_per_month' => -1,
-                    'clients'            => -1,
-                    'pdf_export'         => true,
-                    'reminders'          => true,
-                    'custom_branding'    => true,
-                ]),
-                'is_active'     => true,
-                'created_at'    => now(),
-                'updated_at'    => now(),
+                'name'          => 'Growth',
+                'slug'          => 'growth',
+                'price_monthly' => 19900, // GHS 199.00
+                'invoice_limit' => -1,
+                'features'      => [
+                    'Unlimited invoices',
+                    'PDF downloads',
+                    'MoMo payments',
+                    'Up to 10 team members',
+                    'Priority support',
+                    'Custom invoice prefix',
+                ],
+                'is_active' => true,
             ],
         ];
 
-        DB::table('plans')->insert($plans);
+        foreach ($plans as $plan) {
+            Plan::updateOrCreate(['slug' => $plan['slug']], $plan);
+        }
     }
 }

@@ -49,6 +49,18 @@ class Plan extends Model
     }
 
     /**
+     * Expose features as a zero-indexed list so JSON is always [], never {}.
+     */
+    public static function ensureFeatureList(mixed $features): array
+    {
+        if ($features === null || ! is_array($features)) {
+            return [];
+        }
+
+        return array_values($features);
+    }
+
+    /**
      * Price formatted as GHS 90.00
      */
     public function formattedPrice(): string

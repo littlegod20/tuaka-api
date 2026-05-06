@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\VerifyEmailMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\TuakaLog;
@@ -74,6 +75,19 @@ class AuthController extends Controller
             ]);
 
             DB::commit();
+
+            // Start 14-day Starter trial
+            $starterPlan = \App\Models\Plan::where('slug', 'starter')->first();
+            if ($starterPlan) {
+                \App\Models\Subscription::create([
+                    'tenant_id'            => $tenant->id,
+                    'plan_id'              => $starterPlan->id,
+                    'status'               => 'trialing',
+                    'trial_ends_at'        => now()->addDays(14),
+                    'current_period_start' => now(),
+                    'current_period_end'   => now()->addDays(14),
+                ]);
+            }
 
             TuakaLog::tenantRegistered($tenant->slug, 'none');
             $token = JWTAuth::fromUser($user);
@@ -198,12 +212,48 @@ class AuthController extends Controller
     public function me(): JsonResponse
     {
         $user = auth('api')->user();
+        $tenant = $user->tenant;
+        $subscription = $tenant->subscription?->load('plan');
+
+        $usedThisMonth = \App\Models\Invoice::whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->count();
+
+        $plan  = $subscription?->plan ?? \App\Models\Plan::where('slug', 'free')->first();
+        $limit = $plan?->invoice_limit ?? 5;
 
         return response()->json([
-            'user'   => $this->userData($user),
-            'tenant' => $this->tenantData($user->tenant),
+            'user'         => $this->userData($user),
+            'tenant'       => $this->tenantData($tenant),
+            'subscription' => $subscription ? $this->subscriptionData($subscription) : null,
+            'usage'        => [
+                'invoices_this_month' => $usedThisMonth,
+                'invoice_limit'       => $limit,
+                'limit_reached'       => $limit !== -1 && $usedThisMonth >= $limit,
+            ],
         ]);
     }
+
+
+
+    private function subscriptionData(\App\Models\Subscription $sub): array
+    {
+        return [
+            'status'          => $sub->status,
+            'is_trialing'     => $sub->isTrialing(),
+            'is_active'       => $sub->isActive(),
+            'trial_ends_at'   => $sub->trial_ends_at?->toDateString(),
+            'period_ends_at'  => $sub->current_period_end?->toDateString(),
+            'plan'            => $sub->plan ? [
+                'name'          => $sub->plan->name,
+                'slug'          => $sub->plan->slug,
+                'price_monthly' => $sub->plan->price_monthly,
+                'invoice_limit' => $sub->plan->invoice_limit,
+                'features'      => Plan::ensureFeatureList($sub->plan->features),
+            ] : null,
+        ];
+    }
+
 
     // ─── Helpers ──────────────────────────────────────────────────────────
 

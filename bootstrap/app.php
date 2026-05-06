@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use App\Http\Middleware\EnsureRole;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,12 +20,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant'       => ResolveTenant::class,
             'subscription' => EnsureActiveSubscription::class,
+            'role'         => EnsureRole::class,
         ]);
 
           // Tell Laravel's Authenticate middleware to return null
         // (no redirect) for all API requests — this prevents the
         // "Route [login] not defined" crash
         $middleware->redirectGuestsTo(fn (Request $request) => null);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

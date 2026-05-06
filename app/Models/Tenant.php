@@ -82,6 +82,7 @@ class Tenant extends Model
      */
     public function nextInvoiceNumber(): string
     {
+        $this->refresh(); // to ensure we have the latest prefix
         $prefix = $this->invoice_prefix ?? 'INV';
 
         $latest = \App\Models\Invoice::withoutGlobalScopes()

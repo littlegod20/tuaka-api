@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Payment\PaymentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Dashboard\DashboardController;
+use App\Http\Controllers\Api\V1\Tenant\InviteController;
 
 // ─── Health check ─────────────────────────────────────────────────────────
 Route::get('/health', fn () => response()->json(['status' => 'ok']));
@@ -34,12 +35,19 @@ Route::prefix('inv')->group(function () {
 
 // ─── Password reset (public, no tenant needed) ────────────────────────────
 Route::prefix('v1')->group(function () {
-    Route::post('forgot-password', [PasswordResetController::class, 'sendLink']);
-    Route::post('reset-password',  [PasswordResetController::class, 'reset']);
+    Route::post('forgot-password', [PasswordResetController::class, 'sendLink'])->middleware('throttle:auth');
+    Route::post('reset-password',  [PasswordResetController::class, 'reset'])->middleware('throttle:auth');
 });
 
 // ─── Email verification (public token endpoint, no auth) ──────────────────
 Route::get('v1/verify-email', [EmailVerificationController::class, 'verify']);
+
+
+Route::prefix('v1/invite')->group(function () {
+    Route::get('{token}',         [InviteController::class, 'show']);
+    Route::post('{token}/accept', [InviteController::class, 'accept']);
+});
+
 
 // ─── Admin routes (separate guard, no tenant scope) ───────────────────────
 Route::prefix('v1/admin')->group(function () {
@@ -57,13 +65,14 @@ Route::prefix('v1/admin')->group(function () {
 // 1. tenant     — resolves tenant from X-Tenant header
 // 2. auth:api   — verifies JWT token
 // 3. subscription — checks subscription is valid
-Route::post('v1/register', [AuthController::class, 'register']);
+Route::post('v1/register', [AuthController::class, 'register'])->middleware('throttle:auth');
+
 Route::prefix('v1')
     ->middleware(['tenant'])
     ->group(function () {
-
+        
         // Auth — no JWT needed yet (this is how you get the token)
-        Route::post('login',    [AuthController::class, 'login']);
+        Route::post('login',    [AuthController::class, 'login'])->middleware('throttle:auth');
 
         // Protected — JWT required from here on
         Route::middleware(['auth:api', 'subscription'])
@@ -98,15 +107,31 @@ Route::prefix('v1')
                 Route::apiResource('products', ProductController::class);
                 
                 // Team
-                Route::get('team',             [TeamController::class, 'index']);
-                Route::post('team/invite',      [TeamController::class, 'invite']);
-                Route::delete('team/{user}',    [TeamController::class, 'remove']);
+                Route::prefix('team')->group(function () {
+                    Route::get('/',                  [TeamController::class, 'index']);
+                
+                    // Owner + admin only
+                    Route::middleware('role:owner,admin')->group(function () {
+                        Route::post('invite',            [TeamController::class, 'invite']);
+                        Route::delete('invite/{invite}', [TeamController::class, 'revokeInvite']);
+                        Route::delete('{user}',          [TeamController::class, 'remove']);
+                    });
+                
+                    // Owner only
+                    Route::middleware('role:owner')->group(function () {
+                        Route::patch('{user}/role',      [TeamController::class, 'updateRole']);
+                        Route::post('transfer',          [TeamController::class, 'transferOwnership']);
+                    });
+                });
                 
                 // Billing
-                Route::get('plans',              [BillingController::class, 'plans']);
-                Route::post('billing/subscribe', [BillingController::class, 'subscribe']);
-                Route::post('billing/cancel',    [BillingController::class, 'cancel']);
-                Route::get('billing/invoices',   [BillingController::class, 'invoices']);
+                Route::prefix('billing')->group(function () {
+                    Route::get('plans',          [BillingController::class, 'plans']);
+                    Route::get('current',        [BillingController::class, 'current']);
+                    Route::post('subscribe',     [BillingController::class, 'subscribe']);
+                    Route::post('verify',        [BillingController::class, 'verifyPayment']);
+                    Route::post('cancel',        [BillingController::class, 'cancel']);
+                });
             });
             Route::post('refresh', [AuthController::class, 'refresh']);
     });
