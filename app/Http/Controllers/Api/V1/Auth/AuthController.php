@@ -212,6 +212,16 @@ class AuthController extends Controller
     public function me(): JsonResponse
     {
         $user = auth('api')->user();
+
+        if (class_exists(\Sentry\SentrySdk::class)) {
+            \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($user): void {
+                $scope->setUser([
+                    'id'    => $user->id,
+                    'email' => $user->email,
+                ]);
+            });
+        }
+
         $tenant = $user->tenant;
         $subscription = $tenant->subscription?->load('plan');
 

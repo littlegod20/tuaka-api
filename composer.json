@@ -12,6 +12,7 @@
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "php-open-source-saver/jwt-auth": "^2.9",
+        "sentry/sentry-laravel": "^4.25",
         "spatie/laravel-query-builder": "^7.2"
     },
     "require-dev": {

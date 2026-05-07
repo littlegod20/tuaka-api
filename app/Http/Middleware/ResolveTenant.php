@@ -38,6 +38,17 @@ class ResolveTenant
         // TenantScope reads on every Eloquent query
         app()->instance('current_tenant', $tenant);
 
+        if (class_exists(\Sentry\SentrySdk::class)) {
+            \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($tenant): void {
+                $scope->setTag('tenant', $tenant->slug);
+                $scope->setContext('tenant', [
+                    'id'   => $tenant->id,
+                    'name' => $tenant->name,
+                    'slug' => $tenant->slug,
+                ]);
+            });
+        }
+
         // Also attach to the request so controllers
         // can access it directly via $request->tenant()
         $request->merge(['_tenant' => $tenant]);
