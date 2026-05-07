@@ -222,6 +222,12 @@ class AuthController extends Controller
         $plan  = $subscription?->plan ?? \App\Models\Plan::where('slug', 'free')->first();
         $limit = $plan?->invoice_limit ?? 5;
 
+        $clientCount  = \App\Models\Client::count();
+        $productCount = \App\Models\Product::count();
+        $invoiceCount = \App\Models\Invoice::count();
+        $sentCount    = \App\Models\Invoice::whereNotNull('sent_at')->count();
+
+
         return response()->json([
             'user'         => $this->userData($user),
             'tenant'       => $this->tenantData($tenant),
@@ -230,6 +236,13 @@ class AuthController extends Controller
                 'invoices_this_month' => $usedThisMonth,
                 'invoice_limit'       => $limit,
                 'limit_reached'       => $limit !== -1 && $usedThisMonth >= $limit,
+            ],
+            'onboarding' => [
+                'has_client'  => $clientCount > 0,
+                'has_product' => $productCount > 0,
+                'has_invoice' => $invoiceCount > 0,
+                'has_sent'    => $sentCount > 0,
+                'complete'    => $clientCount > 0 && $invoiceCount > 0 && $sentCount > 0,
             ],
         ]);
     }

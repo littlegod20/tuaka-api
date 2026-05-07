@@ -18,7 +18,11 @@ class TeamController extends Controller
 
     public function index(): JsonResponse
     {
-        $users = User::orderBy('name')->get()->map(fn($u) => [
+        $tenant = app('current_tenant');
+        $users = User::where('tenant_id', $tenant->id)
+            ->orderBy('name')
+            ->get()
+            ->map(fn($u) => [
             'id'         => $u->id,
             'name'       => $u->name,
             'email'      => $u->email,
@@ -29,6 +33,7 @@ class TeamController extends Controller
         ]);
 
         $pendingInvites = Invite::with('invitedBy')
+            ->where('tenant_id', $tenant->id)
             ->where('accepted_at', null)
             ->where('expires_at', '>', now())
             ->get()
@@ -36,7 +41,7 @@ class TeamController extends Controller
                 'id'          => $i->id,
                 'email'       => $i->email,
                 'role'        => $i->role,
-                'invited_by'  => $i->invitedBy->name,
+                'invited_by'  => $i->invitedBy?->name ?? 'Unknown',
                 'expires_at'  => $i->expires_at,
                 'is_pending'  => true,
             ]);
@@ -51,6 +56,7 @@ class TeamController extends Controller
 
     public function invite(Request $request): JsonResponse
     {
+        $tenant = app('current_tenant');
         $actor = auth('api')->user();
 
         $validator = Validator::make($request->all(), [
@@ -73,7 +79,9 @@ class TeamController extends Controller
         }
 
         // Check if user already exists in this tenant
-        $exists = User::where('email', $request->email)->exists();
+        $exists = User::where('tenant_id', $tenant->id)
+            ->where('email', $request->email)
+            ->exists();
         if ($exists) {
             return response()->json([
                 'message' => 'This email is already a member of your workspace.',
@@ -82,11 +90,11 @@ class TeamController extends Controller
 
         // Delete any expired invite for this email
         Invite::where('email', $request->email)
-            ->where('tenant_id', app('current_tenant')->id)
+            ->where('tenant_id', $tenant->id)
             ->delete();
 
         $invite = Invite::create([
-            'tenant_id'  => app('current_tenant')->id,
+            'tenant_id'  => $tenant->id,
             'invited_by' => $actor->id,
             'email'      => $request->email,
             'role'       => $request->role,

@@ -83,7 +83,9 @@ class InviteController extends Controller
         }
 
         // Check if email already exists in this tenant
-        $existing = User::where('email', $invite->email)->first();
+        $existing = User::where('email', $invite->email)
+            ->where('tenant_id', $invite->tenant_id)
+            ->first();
         if ($existing) {
             return response()->json([
                 'message' => 'An account with this email already exists.',
