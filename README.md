@@ -485,4 +485,4 @@ git commit -m "chore: add PlanSeeder with three default plans"
 
 ---
 
-*TuaKa API — Pay up. Move forward.*
+*TuaKa API — Pay up. Move forward.*# Tuaka API
