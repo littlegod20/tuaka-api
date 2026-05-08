@@ -93,7 +93,6 @@ class PaystackService
         string $callbackUrl = '',
     ): array {
         $response = Http::withToken($this->secretKey)
-            ->withoutVerifying()
             ->post("{$this->baseUrl}/transaction/initialize", [
                 'email'        => $email,
                 'amount'       => $amount,
@@ -109,7 +108,6 @@ class PaystackService
     public function verifyTransaction(string $reference): array
     {
         $response = Http::withToken($this->secretKey)
-            ->withoutVerifying()
             ->get("{$this->baseUrl}/transaction/verify/{$reference}");
     
         return $response->json();
