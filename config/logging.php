@@ -54,8 +54,13 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels'          => ['daily', 'stderr'],
+            'channels'          => ['daily', 'stderr', 'sentry_logs'],
             'ignore_exceptions' => false,
+        ],
+
+        'sentry_logs' => [
+            'driver' => 'sentry_logs',
+            'level'  => env('LOG_LEVEL', 'info'),
         ],
 
         // ─── Single file (simple debugging) ──────────────────────────
