@@ -1,3 +1,4 @@
+
 <?php
 
 return [
@@ -6,8 +7,9 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:3000',  // admin portal
-        'http://localhost:3001',  // business portal
+        'https://admin.tuaka.org',  // admin portal
+	'https://www.tuaka.org',
+        'https://tuaka.org',
         env('FRONTEND_URL'),
     ],
 
