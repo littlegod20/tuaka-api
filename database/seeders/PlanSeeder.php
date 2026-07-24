@@ -26,8 +26,8 @@ class PlanSeeder extends Seeder
             [
                 'name'          => 'Starter',
                 'slug'          => 'starter',
-                'price_monthly' => 9900, // GHS 99.00
-                'invoice_limit' => -1,
+                'price_monthly' => 3500, // GHS 35.00
+                'invoice_limit' => -1, // unlimited invoices
                 'features'      => [
                     'Unlimited invoices',
                     'PDF downloads',
@@ -40,8 +40,8 @@ class PlanSeeder extends Seeder
             [
                 'name'          => 'Growth',
                 'slug'          => 'growth',
-                'price_monthly' => 19900, // GHS 199.00
-                'invoice_limit' => -1,
+                'price_monthly' => 7500, // GHS 75.00
+                'invoice_limit' => -1, // unlimited invoices
                 'features'      => [
                     'Unlimited invoices',
                     'PDF downloads',
