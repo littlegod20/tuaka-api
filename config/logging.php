@@ -58,10 +58,10 @@ return [
             'ignore_exceptions' => false,
         ],
 
-	'sentry_logs' => [
-	    'driver' => 'sentry_logs',
-	    'level'  => env('LOG_LEVEL', 'info'),
-	],
+        'sentry_logs' => [
+            'driver' => 'sentry_logs',
+            'level'  => env('LOG_LEVEL', 'info'),
+        ],
 
         // ─── Single file (simple debugging) ──────────────────────────
         'single' => [
