@@ -480,8 +480,8 @@ git commit -m "chore: add PlanSeeder with three default plans"
 ## Related repositories
 
 | Repository | Description |
-|-----------|-------------|
-| `tuaka-web` | React monorepo — admin portal and business portal |
+| ---------- | ----------- |
+| [`tuaka-web`](https://github.com/littlegod20/tuaka-web) | React monorepo — admin portal and business portal |
 
 ---
 
