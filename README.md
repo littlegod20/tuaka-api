@@ -1,6 +1,6 @@
 # TuaKa API Project
 
-> REST API powering the [TuaKa](https://tuaka.app) invoicing platform — multi-tenant, queue-driven, and built for West African small businesses.
+> REST API powering the [TuaKa](https://tuaka.org) invoicing platform — multi-tenant, queue-driven, and built for West African small businesses.
 
 ---
 
